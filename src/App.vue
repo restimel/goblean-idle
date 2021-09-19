@@ -1,15 +1,22 @@
 <template>
-    <div id="nav">
-        <router-link to="/">Home</router-link> |
-        <router-link to="/about">About</router-link>
-    </div>
     <router-view/>
 </template>
 
 <style>
 :root {
     --brand-primary: #42b983;
+    --brand-secondary: #f1b255;;
+    --main-background: #EEFFEE;
     --text-color: #2c3e50;
+}
+
+html,body, #app {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    top: 0;
 }
 
 #app {
@@ -18,18 +25,18 @@
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
     color: var(--text-color);
+    background-color: var(--main-background);
+    height: 100%;
+    width: 100%;
 }
 
-#nav {
-    padding: 30px;
+.goblean-title {
+    color: var(--brand-primary);
+    text-shadow: 3px 2px 5px var(--brand-secondary);
 }
 
-#nav a {
-    font-weight: bold;
-    color: var(--text-color);
-}
-
-#nav a.router-link-exact-active {
+.page-title {
     color: var(--brand-primary);
 }
+
 </style>

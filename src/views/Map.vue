@@ -1,7 +1,6 @@
 <template>
-    <div class="about">
+    <div class="map">
         <Back />
-        <h1 class="page-title">About Goblean</h1>
     </div>
 </template>
 
@@ -10,7 +9,7 @@ import { defineComponent } from 'vue';
 import Back from '@/components/Back.vue';
 
 export default defineComponent({
-    name: 'About',
+    name: 'Map',
     components: {
         Back,
     },
