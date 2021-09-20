@@ -1,7 +1,7 @@
 <template>
     <div class="about">
         <Back />
-        <h1 class="page-title">About Goblean</h1>
+        <h1 class="page-title">{{T('About %s', i18n.projectName)}}</h1>
     </div>
 </template>
 
@@ -11,6 +11,7 @@ import Back from '@/components/Back.vue';
 
 export default defineComponent({
     name: 'About',
+    inject: ['T', 'i18n'],
     components: {
         Back,
     },

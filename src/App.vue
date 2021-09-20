@@ -2,6 +2,22 @@
     <router-view/>
 </template>
 
+<script lang="ts">
+import { defineComponent } from 'vue';
+import i18n from '@/i18n';
+
+export default defineComponent({
+    name: 'App',
+    provide() {
+        return {
+            T: i18n._,
+            i18n: i18n,
+        };
+    },
+});
+</script>
+
+
 <style>
 :root {
     --brand-primary: #42b983;

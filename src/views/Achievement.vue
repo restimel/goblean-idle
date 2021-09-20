@@ -1,7 +1,7 @@
 <template>
     <div class="achievement">
         <Back />
-        <h1 class="page-title">Achievement</h1>
+        <h1 class="page-title">{{T('Achievement')}}</h1>
     </div>
 </template>
 
@@ -11,6 +11,7 @@ import Back from '@/components/Back.vue';
 
 export default defineComponent({
     name: 'Achievement',
+    inject: ['T'],
     components: {
         Back,
     },

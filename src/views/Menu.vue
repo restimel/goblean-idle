@@ -1,9 +1,9 @@
 <template>
     <div class="menu">
-        <header class="goblean-title">Goblean <sub>idle</sub></header>
-        <router-link to="/map">Play</router-link>
-        <router-link to="/achievement">Achievement</router-link>
-        <router-link to="/about">About</router-link>
+        <header class="goblean-title">{{i18n.projectName}} <sub>{{i18n.projectSubName}}</sub></header>
+        <router-link to="/map">{{T('Play')}}</router-link>
+        <router-link to="/achievement">{{T('Achievement')}}</router-link>
+        <router-link to="/about">{{T('About')}}</router-link>
     </div>
 </template>
 
@@ -12,6 +12,12 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
     name: 'Menu',
+    inject: ['T', 'i18n'],
+    data() {
+        return {
+            test: (v: string) => v + this.T('test1'),
+        };
+    },
 });
 </script>
 
