@@ -5,6 +5,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import i18n from '@/i18n';
+import buildStore from '@/store';
 
 export default defineComponent({
     name: 'App',
@@ -12,6 +13,7 @@ export default defineComponent({
         return {
             T: i18n._,
             i18n: i18n,
+            store: buildStore(),
         };
     },
 });
