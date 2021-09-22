@@ -19,7 +19,7 @@ export default function createStore(): Store {
     });
 
     const achievement: Achievement = {
-        start: computed(() => store.resource.gold > 0 ) as unknown as boolean,
+        gold1: computed(() => store.resource.gold > 0 ) as unknown as boolean,
     };
 
     store.achievement = achievement;

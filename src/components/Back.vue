@@ -23,7 +23,7 @@
                 <use href="#svg-arrow" class="arrow-active" />
             </svg>
             <span class="label">
-                Menu
+                {{T('Menu')}}
             </span>
         </div>
     </div>
@@ -34,7 +34,7 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
     name: 'Back',
-
+    inject: ['T'],
     methods: {
         move() {
             this.$router.push('menu');
