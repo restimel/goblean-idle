@@ -6,20 +6,22 @@
 import { defineComponent } from 'vue';
 import i18n from '@/i18n';
 import buildStore from '@/store';
+import { storeInject, TInject, i18nInject } from '@/symbols';
 
 export default defineComponent({
     name: 'App',
     provide() {
+        const store = buildStore();
         return {
-            T: i18n._,
-            i18n: i18n,
-            store: buildStore(),
+            [TInject as unknown as string]: i18n._,
+            T: i18n._, /* in order to support inject: ['T'] */
+            [i18nInject as unknown as string]: i18n,
+            i18n: i18n, /* in order to support inject: ['i18n'] */
+            [storeInject as unknown as string]: store,
         };
     },
 });
 </script>
-
-
 <style>
 :root {
     --brand-primary: #42b983;

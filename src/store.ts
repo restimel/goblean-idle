@@ -1,4 +1,4 @@
-import { reactive, computed } from 'vue';
+import { reactive, computed, ComputedRef } from 'vue';
 import {Store, Resource, TickInfo, CreatingStore, Achievement } from '@/Types';
 
 
@@ -18,11 +18,19 @@ export default function createStore(): Store {
         tickInfo,
     });
 
-    const achievement: Achievement = {
-        gold1: computed(() => store.resource.gold > 0 ) as unknown as boolean,
+    const achievement: Record<string, ComputedRef<boolean>> = {
+        gold1: computed(() => store.resource.gold > 0 ),
+        allTrophies: computed(() => {
+            let nb = 0;
+            const achievements = Object.values((store as Store).achievement);
+            for (const value of achievements) {
+                nb += +value;
+            }
+            return nb >= achievements.length - 1;
+        }),
     };
 
-    store.achievement = achievement;
+    store.achievement = achievement as unknown as Achievement;
 
     return store as Store;
 }

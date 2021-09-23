@@ -1,4 +1,13 @@
 
+
+export interface I18n {
+    _: (str: string) => string;
+    changeLocale: (locale: string) => boolean;
+    locale: string;
+    projectName: string;
+    projectSubName: string;
+}
+
 export interface Action {
     id: bigint;
     name: string;
@@ -11,13 +20,14 @@ export interface ActionModifier {
     start: Action[];
 }
 
-export type AchievementGrade = 'bronze' | 'silver' | 'gold';
+export type AchievementGrade = 'jade' | 'bronze' | 'silver' | 'gold' | 'diamond';
 
 export interface AchievementItem {
     title: string; /* displayed below the image */
     label: string; /* Text about the achievement */
     hint: string; /* Text about how to achieve the condition (hidden if secret) */
     secret?: boolean; /* Hide information until condition meet */
+    secretTitle?: string; /* Display this title until it has been unlocked */
     condition: () => boolean;
     path: string; /* svg path to display image */
     grade: AchievementGrade;

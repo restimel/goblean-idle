@@ -1,12 +1,5 @@
 import { reactive } from 'vue';
-
-export interface I18n {
-    _: (str: string) => string;
-    changeLocale: (locale: string) => boolean;
-    locale: string;
-    projectName: string;
-    projectSubName: string;
-}
+import { I18n } from '@/Types';
 
 const i18n: I18n = reactive({
     _(str: string) {

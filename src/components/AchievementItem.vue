@@ -13,14 +13,14 @@
                 viewBox="0 0 1000 1000"
                 width="100" height="100"
             >
-                <circle cx="500" cy="500" r="470" class="badge-circle" />
+                <circle cx="500" cy="500" r="460" class="badge-circle" />
                 <path :d="path" class="path-pattern" />
             </svg>
             <span class="achievement-title">
-                {{item.title}}
+                {{title}}
             </span>
             <span class="achievement-label">
-                {{item.label}}
+                {{label}}
             </span>
         </div>
     </div>
@@ -56,6 +56,20 @@ export default defineComponent({
             }
             return item.hint;
         },
+        title() {
+            const item = this.item;
+            if (!this.isAchieved && item.secret) {
+                return item.secretTitle || '???';
+            }
+            return item.title;
+        },
+        label() {
+            const item = this.item;
+            if (!this.isAchieved) {
+                return '';
+            }
+            return item.label;
+        },
         path() {
             const item = this.item;
             if (!this.isAchieved) {
@@ -72,28 +86,69 @@ export default defineComponent({
 
 <style scoped>
 .achievement-item {
+    --item-width: 150px;
     cursor: help;
+    width: var(--item-width);
 }
 
 svg {
     display: block;
+    margin: 0 calc((var(--item-width) - 100px) / 2);
 }
 
 .achievement-item .none {
-    stroke: #AA99BB;
-    fill: #9080A0;
+    stroke: #e8e2ee;
+    fill: #e4dbe4;
+    color: #dddddd;
 }
 
 .achievement-item .bronze {
     stroke: #cd7f32;
     fill: #7b4c1e;
+    color: #ee9439;
+}
+
+.achievement-item .silver {
+    stroke: #f0f0F0;
+    fill: #c0c0c0;
+    color: #606070;
+}
+
+.achievement-item .gold {
+    stroke: #ffd700;
+    fill: #e4a003;
+    color: #ffd700;
+}
+
+.achievement-item .diamond {
+    stroke: #d0d0f0cc;
+    fill: #e0e0eaee;
+    color: #c0c0f0;
+}
+
+.achievement-item .jade {
+    stroke: #339900;
+    fill: #221100;
+    color: #339900;
 }
 
 .badge-circle {
-    stroke-width: 60;
+    stroke-width: 70;
 }
 .path-pattern {
     fill: none;
-    stroke-width: 20;
+    stroke-width: 30;
+}
+
+.achievement-title {
+    display: block;
+    font-weight: bold;
+}
+.achievement-label {
+    display: block;
+    font-style: italic;
+    text-align: justify;
+    color: var(--text-color);
+    font-size: 0.8em;
 }
 </style>

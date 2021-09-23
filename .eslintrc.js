@@ -34,6 +34,7 @@ module.exports = {
         'no-inner-declarations': 'error',
         'no-multi-spaces': 'error',
         'no-multi-str': 'error',
+        'no-non-null-assertion': false,
         'no-octal': 'error',
         'no-unexpected-multiline': 'off',
         'no-unreachable': 'error',
