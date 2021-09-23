@@ -1,5 +1,6 @@
 <template>
     <router-view/>
+    <Notification />
 </template>
 
 <script lang="ts">
@@ -7,6 +8,7 @@ import { defineComponent } from 'vue';
 import i18n from '@/i18n';
 import buildStore from '@/store';
 import { storeInject, TInject, i18nInject } from '@/symbols';
+import Notification from '@/components/Notification.vue';
 
 export default defineComponent({
     name: 'App',
@@ -20,6 +22,9 @@ export default defineComponent({
             [storeInject as unknown as string]: store,
         };
     },
+    components: {
+        Notification,
+    },
 });
 </script>
 <style>
@@ -28,6 +33,8 @@ export default defineComponent({
     --brand-secondary: #f1b255;;
     --main-background: #EEFFEE;
     --text-color: #2c3e50;
+    --notification-bg: #f2fdfcd9;
+    --notification-color: #009bb3;
 }
 
 html,body, #app {

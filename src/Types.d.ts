@@ -33,10 +33,24 @@ export interface AchievementItem {
     grade: AchievementGrade;
 }
 
+export interface Notification {
+    title: string;
+    message?: string;
+    delay?: number;
+}
+
 /* {{{ Store */
 
 export interface Resource {
     gold: bigint;
+}
+
+export interface States {
+    notificationDismiss: bigint;
+}
+
+export interface Tools {
+    notification?: Notification;
 }
 
 export type Achievement = Record<string, boolean>;
@@ -50,7 +64,9 @@ export interface TickInfo {
 
 export interface CreatingStore {
     resource: Resource;
+    states: States;
     tickInfo: TickInfo;
+    tools: Tools;
     achievement?: Achievement;
 }
 

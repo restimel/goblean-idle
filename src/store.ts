@@ -1,5 +1,12 @@
 import { reactive, computed, ComputedRef } from 'vue';
-import {Store, Resource, TickInfo, CreatingStore, Achievement } from '@/Types';
+import {
+    Store,
+    Resource,
+    TickInfo,
+    CreatingStore,
+    Achievement,
+    States,
+} from '@/Types';
 
 
 export default function createStore(): Store {
@@ -12,14 +19,23 @@ export default function createStore(): Store {
         nextActionDate: Infinity,
         actions: [],
     };
+    const states: States = {
+        notificationDismiss: 0n,
+    };
 
     const store: CreatingStore = reactive({
         resource,
+        states,
         tickInfo,
+        tools: {},
     });
 
     const achievement: Record<string, ComputedRef<boolean>> = {
         gold1: computed(() => store.resource.gold > 0 ),
+        dismiss10: computed(() => store.states.notificationDismiss >= 10),
+        dismiss50: computed(() => store.states.notificationDismiss >= 50),
+        dismiss100: computed(() => store.states.notificationDismiss >= 100),
+        dismiss1000: computed(() => store.states.notificationDismiss >= 1000),
         allTrophies: computed(() => {
             let nb = 0;
             const achievements = Object.values((store as Store).achievement);
