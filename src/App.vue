@@ -9,11 +9,13 @@ import i18n from '@/i18n';
 import buildStore from '@/store';
 import { storeInject, TInject, i18nInject } from '@/symbols';
 import Notification from '@/components/Notification.vue';
+import { getFullList } from '@/tools/Achievements';
 
 export default defineComponent({
     name: 'App',
     provide() {
         const store = buildStore();
+        getFullList(store, i18n._);
         return {
             [TInject as unknown as string]: i18n._,
             T: i18n._, /* in order to support inject: ['T'] */

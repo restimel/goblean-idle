@@ -29,6 +29,7 @@ export interface AchievementItem {
     secret?: boolean; /* Hide information until condition meet */
     secretTitle?: string; /* Display this title until it has been unlocked */
     condition: () => boolean;
+    hide?: () => boolean; /* If the function return true, the achievement is not shown (except it has already been unlocked) */
     path: string; /* svg path to display image */
     grade: AchievementGrade;
 }

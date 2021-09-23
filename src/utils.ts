@@ -32,3 +32,16 @@ export async function notification(store: Store, title: string, message?: string
 export function notificationClear(store: Store) {
     store.tools.notification = undefined;
 }
+
+interface NotificationArg {
+    title: string;
+    message?: string;
+    delay?: number;
+}
+
+export async function notificationStack(store: Store, messages: NotificationArg[]) {
+    for (const message of messages) {
+        await notification(store, message.title, message.message, message.delay);
+        await sleep(3000);
+    }
+}
