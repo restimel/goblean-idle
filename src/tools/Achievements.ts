@@ -48,6 +48,15 @@ export function getFullList(store: Store, T: I18n['_']): AchievementItem[] {
         path: '',
         grade: 'diamond',
     }, {
+        title: T('Cookie lover'),
+        secretTitle: T('Mystery'),
+        secret: true,
+        label: T('Huuum cookies!'),
+        hint: T('You love cookies even if they are needless!'),
+        condition: () => store.achievement.secretCookie,
+        path: '',
+        grade: 'bronze',
+    }, {
         title: T('All trophies'),
         label: T('Outstanding! You are a Goblean ruler!'),
         hint: T('Get all trophies'),

@@ -22,6 +22,7 @@ export default defineComponent({
             [i18nInject as unknown as string]: i18n,
             i18n: i18n, /* in order to support inject: ['i18n'] */
             [storeInject as unknown as string]: store,
+            store: store, /* in order to support inject: ['i18n'] */
         };
     },
     components: {
@@ -37,6 +38,8 @@ export default defineComponent({
     --text-color: #2c3e50;
     --notification-bg: #f2fdfcd9;
     --notification-color: #009bb3;
+    --item-bg: #f0f0f0;
+    --item-color: var(--text-color);
 }
 
 html,body, #app {

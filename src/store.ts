@@ -21,6 +21,7 @@ export default function createStore(): Store {
     };
     const states: States = {
         notificationDismiss: 0n,
+        cookieAccepted: false,
     };
 
     const store: CreatingStore = reactive({
@@ -44,6 +45,7 @@ export default function createStore(): Store {
             }
             return nb >= achievements.length - 1;
         }),
+        secretCookie: computed(() => store.states.cookieAccepted ),
     };
 
     store.achievement = achievement as unknown as Achievement;

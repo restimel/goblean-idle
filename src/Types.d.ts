@@ -48,6 +48,7 @@ export interface Resource {
 
 export interface States {
     notificationDismiss: bigint;
+    cookieAccepted: boolean;
 }
 
 export interface Tools {
