@@ -38,6 +38,7 @@ export interface Notification {
     title: string;
     message?: string;
     delay?: number;
+    type?: 'success' | 'warning' | 'error' | 'info';
 }
 
 /* {{{ Store */

@@ -1,6 +1,6 @@
 import { reactive, watch } from 'vue';
 import { AchievementItem, I18n, Store } from '@/Types';
-import { notificationStack } from '@/utils';
+import { notification } from '@/utils';
 
 const list: Map<Store, AchievementItem[]> = new Map();
 
@@ -79,7 +79,7 @@ export function getFullList(store: Store, T: I18n['_']): AchievementItem[] {
                 message: achievement.title,
             };
         });
-        notificationStack(store, messages);
+        notification(store, messages);
     });
 
     list.set(store, achievementList);

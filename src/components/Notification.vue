@@ -1,7 +1,11 @@
 <template>
     <teleport to="#app">
         <transition name="bounce" appear>
-            <div v-if="!!title" class="notification" @click="dismiss">
+            <div v-if="!!title"
+                class="notification"
+                :class="type"
+                @click="dismiss"
+            >
                 <header>{{title}}</header>
                 <p>{{message}}</p>
             </div>
@@ -11,7 +15,7 @@
 
 <script lang="ts">
 import { defineComponent, computed, watch } from 'vue';
-import { injectStrict, notificationClear } from '@/utils';
+import { injectStrict, notificationDismiss } from '@/utils';
 import { storeInject } from '@/symbols';
 import { Notification } from '@/Types';
 
@@ -22,9 +26,10 @@ export default defineComponent({
         const notificationStore = computed(() => store.tools.notification);
         const message = computed(() => notificationStore.value && notificationStore.value.message || '');
         const title = computed(() => notificationStore.value && notificationStore.value.title);
+        const type = computed(() => notificationStore.value && notificationStore.value.type || 'info');
         const close = () => {
             clearTimeout(delayTimer);
-            notificationClear(store);
+            notificationDismiss(store);
         }
         const dismiss = () => {
             close();
@@ -45,6 +50,7 @@ export default defineComponent({
         return {
             message,
             title,
+            type,
             dismiss,
         };
     },
@@ -66,8 +72,24 @@ export default defineComponent({
     transform: var(--transformation);
     max-width: 50%;
     border: 5px solid #ffffffee;
-    box-shadow: 0 -3px 20px 3px var(--notification-bg);
+    box-shadow: 0 -3px 25px 5px var(--notification-bg);
     z-index: 1000;
+}
+.notification.info {
+    --notification-bg: var(--notification-bg-info);
+    --notification-color: var(--notification-color-info);
+}
+.notification.succes {
+    --notification-bg: var(--notification-bg-succes);
+    --notification-color: var(--notification-color-succes);
+}
+.notification.warning {
+    --notification-bg: var(--notification-bg-warning);
+    --notification-color: var(--notification-color-warning);
+}
+.notification.error {
+    --notification-bg: var(--notification-bg-error);
+    --notification-color: var(--notification-color-error);
 }
 
 .notification header {

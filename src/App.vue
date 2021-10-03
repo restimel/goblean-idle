@@ -36,10 +36,19 @@ export default defineComponent({
     --brand-secondary: #f1b255;;
     --main-background: #EEFFEE;
     --text-color: #2c3e50;
-    --notification-bg: #f2fdfcd9;
-    --notification-color: #009bb3;
     --item-bg: #f0f0f0;
     --item-color: var(--text-color);
+
+    --notification-bg-error: #ffacacd9;
+    --notification-bg-warning: #ffbb77d9;
+    --notification-bg-success: #d7ffd7d9;
+    --notification-bg-info: #f2fdfcd9;
+    --notification-bg: var(--notification-bg-info); /* will be override */
+    --notification-color-error: #009bb3;
+    --notification-color-warning: #009bb3;
+    --notification-color-success: #009bb3;
+    --notification-color-info: #009bb3;
+    --notification-color: var(--notification-color-info); /* will be override */
 }
 
 html,body, #app {

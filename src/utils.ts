@@ -1,6 +1,6 @@
 import { inject, InjectionKey } from 'vue';
-import { Store } from '@/Types';
-import { storeInject } from './symbols';
+import { Notification, Store } from '@/Types';
+import { notificationStack } from '@/tools/Notifications';
 
 export function injectStrict<T>(key: InjectionKey<T>, fallback?: T): T {
     const resolved = inject(key, fallback);
@@ -16,32 +16,9 @@ export function sleep(delay: number) {
     });
 }
 
-export async function notification(store: Store, title: string, message?: string, delay = 10000) {
-    if (store.tools.notification) {
-        notificationClear(store);
-        await sleep(0);
-    }
-
-    store.tools.notification = {
-        title,
-        message,
-        delay,
-    };
+export async function notification(store: Store, messages: Notification | Notification[]) {
+    const notifications = Array.isArray(messages) ? messages : [messages];
+    notificationStack(store, notifications);
 }
 
-export function notificationClear(store: Store) {
-    store.tools.notification = undefined;
-}
-
-interface NotificationArg {
-    title: string;
-    message?: string;
-    delay?: number;
-}
-
-export async function notificationStack(store: Store, messages: NotificationArg[]) {
-    for (const message of messages) {
-        await notification(store, message.title, message.message, message.delay);
-        await sleep(3000);
-    }
-}
+export { notificationDismiss } from '@/tools/Notifications';
