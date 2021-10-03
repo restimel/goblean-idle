@@ -1,8 +1,9 @@
 
+export type SupportedLanguage = 'en';
 
 export interface I18n {
-    _: (str: string) => string;
-    changeLocale: (locale: string) => boolean;
+    _: (str: string, ...args: any[]) => string;
+    changeLocale: (locale: SupportedLanguage) => boolean;
     locale: string;
     projectName: string;
     projectSubName: string;
