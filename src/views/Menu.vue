@@ -13,11 +13,6 @@ import { defineComponent } from 'vue';
 export default defineComponent({
     name: 'Menu',
     inject: ['T', 'i18n'],
-    data() {
-        return {
-            test: (v: string) => v + this.T('test1'),
-        };
-    },
 });
 </script>
 

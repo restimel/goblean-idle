@@ -35,6 +35,7 @@ import { defineComponent } from 'vue';
 export default defineComponent({
     name: 'Back',
     inject: ['T'],
+    emits: ['click'],
     methods: {
         move() {
             this.$router.push('menu');

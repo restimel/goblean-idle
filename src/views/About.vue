@@ -30,6 +30,12 @@
                     {{T('All data stored on your browser are only needed ' +
                     'for the game usage and are not read by anyone else.')}}
                 </p>
+                <p>
+                    <b>
+                    {{T('There is absolutely no data sent to any server. ' +
+                    'Everything is kept localy on your browser.')}}
+                    </b>
+                </p>
                 <label>
                     {{T('Accept useless cookies')}}
                     <input type="checkbox" :value="cookies" @change="eatCookie">

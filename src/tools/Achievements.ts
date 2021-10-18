@@ -66,6 +66,9 @@ export function getFullList(store: Store, T: I18n['_']): AchievementItem[] {
     }]);
 
     watch(achievementList.map((item) => () => item.condition()), (newValues, oldValues) => {
+        if (!store.isReady) {
+            return;
+        }
         const indexes: number[] = [];
         newValues.forEach((value, index) => {
             if (value && !oldValues[index]) {

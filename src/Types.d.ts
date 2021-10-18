@@ -55,6 +55,11 @@ export interface States {
 
 export interface Tools {
     notification?: Notification;
+    saveTimer?: number;
+}
+
+export interface Settings {
+    saveDelay: number;
 }
 
 export type Achievement = Record<string, boolean>;
@@ -66,12 +71,18 @@ export interface TickInfo {
     actions: Action[];
 }
 
-export interface CreatingStore {
+export interface DBStore {
+    userSession: string;
+    settings: Settings;
     resource: Resource;
     states: States;
     tickInfo: TickInfo;
-    tools: Tools;
+}
+
+export interface CreatingStore extends DBStore {
     achievement?: Achievement;
+    tools: Tools;
+    isReady: boolean;
 }
 
 export interface Store extends CreatingStore {

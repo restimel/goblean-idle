@@ -26,6 +26,7 @@ module.exports = {
         'no-debugger': 'error',
         'no-empty-pattern': 'error',
         'no-eval': 'error',
+        'no-explicit-any': false,
         'no-extra-bind': 'error',
         'no-extra-boolean-cast': 'error',
         'no-extra-semi': 'error',
