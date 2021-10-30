@@ -9,7 +9,7 @@ export function convertToDuration(ticks: bigint, tickInfo: TickInfo): number {
 }
 
 /**
- * @returns [nbTick, duration]
+ * @returns nbTick
  */
 export function computeTick(tickInfo: TickInfo): bigint {
     const now = Date.now();
@@ -20,7 +20,7 @@ export function computeTick(tickInfo: TickInfo): bigint {
     const nbTick = convertToTicks(targetDate - tickInfo.lastActionDate, tickInfo);
 
     return nbTick;
-};
+}
 
 function doActions(tickInfo: TickInfo): boolean {
     /* Compute nb Tick to do */
@@ -29,14 +29,17 @@ function doActions(tickInfo: TickInfo): boolean {
         /* This break the doActions recursive loop */
         return false;
     }
+    /* store these information */
     tickInfo.lastActionDate += convertToDuration(nbTick, tickInfo);
+    const currentTick = tickInfo.lastActionTick + nbTick;
+    tickInfo.lastActionTick = currentTick;
 
     const remove: Set<bigint> = new Set();
     const add: Action[] = [];
 
     /* Apply all actions */
-    for (let action of tickInfo.actions) {
-        const { start, stop } = action.action(nbTick, tickInfo.lastActionDate);
+    for (const action of tickInfo.actions) {
+        const { start, stop } = action.action(nbTick, currentTick, action);
         stop.forEach((id) => remove.add(id));
         add.push(...start);
     }
@@ -45,32 +48,48 @@ function doActions(tickInfo: TickInfo): boolean {
     removeActions(remove, tickInfo);
     addActions(add, tickInfo);
 
-    /* Compute the next same actions period */
-    const nextDate = tickInfo.actions.reduce((date, action) => {
+    /* Compute the duration of next identical actions period */
+    const nextTick = tickInfo.actions.reduce((tick, action) => {
         const endAt = action.endAt;
-        if (endAt < nextDate && endAt > tickInfo.lastActionDate) {
+        if (endAt < tick && endAt > currentTick) {
             return endAt;
         }
-        return date;
-    }, Infinity);
-    tickInfo.nextActionDate = nextDate;
+        return tick;
+    }, currentTick + 1000000000n);
+    tickInfo.nextActionDate = tickInfo.lastActionDate + convertToDuration(nextTick, tickInfo);
 
     /* repeat to apply next available ticks */
     return true;
 }
 
-export function runActions(store: Store) {
+export function runActions(store: Store): void {
     const tickInfo = store.tickInfo;
+    const isRepetitive = !!timerRepetitiveActions;
+    stopRepetitiveActions();
 
     while(doActions(tickInfo)) {
         /* just wait that doActions return false */
     }
+
+    if (isRepetitive) {
+        startRepetitiveActions(store);
+    }
 }
 
-export function addActions(actions: Action[], tickInfo: TickInfo) {
+export function addActions(actions: Action[], tickInfo: TickInfo): void {
     tickInfo.actions.push(...actions);
 }
 
-export function removeActions(actionsId: Set<bigint>, tickInfo: TickInfo) {
-    tickInfo.actions = tickInfo.actions.filter((action) => actionsId.has(action.id));
+export function removeActions(actionsId: Set<bigint>, tickInfo: TickInfo): void {
+    tickInfo.actions = tickInfo.actions.filter((action) => !actionsId.has(action.id));
+}
+
+let timerRepetitiveActions = 0;
+export function startRepetitiveActions(store: Store): void {
+    timerRepetitiveActions = setTimeout(runActions, store.settings.delayCheckTick, store);
+}
+
+export function stopRepetitiveActions(): void {
+    clearTimeout(timerRepetitiveActions);
+    timerRepetitiveActions = 0;
 }

@@ -1,4 +1,4 @@
-import { reactive, computed, ComputedRef, watch } from 'vue';
+import { reactive, computed, ComputedRef } from 'vue';
 import {
     Store,
     Resource,
@@ -12,20 +12,26 @@ import {
     loadStore,
     saveStore as saveStoreDB,
 } from '@/tools/DB';
-import { sleep } from './utils';
+import { sleep } from '@/utils';
+import {
+    runActions, startRepetitiveActions,
+} from '@/tools/Tick';
+import { restoreAction } from '@/tools/Actions';
 
 
 export default function createStore(): Store {
     const settings: Settings = {
         saveDelay: 10000,
+        delayCheckTick: 1000,
     };
     const resource: Resource  = {
         gold: 0n,
     };
     const tickInfo: TickInfo = {
-        tickDuration: 1000n,
-        lastActionDate: 0,
+        tickDuration: 200n,
+        lastActionDate: Date.now(),
         nextActionDate: Infinity,
+        lastActionTick: 0n,
         actions: [],
     };
     const states: States = {
@@ -74,24 +80,42 @@ export default function createStore(): Store {
         }
         checkStoreValue(store);
 
-        await sleep(10);
+        await sleep(5);
         store.isReady = true;
+        runActions(store);
+        saveStore(store);
+        await sleep(10);
+        startRepetitiveActions(store);
         saveInterval(store);
     });
 
     return store;
 }
 
-export function checkStoreValue(store: Store) {
+export function checkStoreValue(store: Store): Store {
+    if (store.tickInfo.tickDuration < 1n) {
+        store.tickInfo.tickDuration = 1n;
+    }
+
     if (store.settings.saveDelay < 1000) {
         store.settings.saveDelay = 1000;
         saveInterval(store);
     }
 
+    if (store.settings.delayCheckTick < 500) {
+        store.settings.delayCheckTick = 500;
+    }
+
+    store.tickInfo.actions.forEach((action, idx, list) => {
+        if (typeof action.action !== 'function') {
+            list[idx] = restoreAction(store, action);
+        }
+    });
+
     return store;
 }
 
-export function saveInterval(store: Store) {
+export function saveInterval(store: Store): void {
     clearInterval(store.tools.saveTimer || 0);
     store.tools.saveTimer = setInterval(() => {
         saveStore(store);

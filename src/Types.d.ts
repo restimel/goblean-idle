@@ -9,11 +9,15 @@ export interface I18n {
     projectSubName: string;
 }
 
-export interface Action {
+export interface DBAction<T = Record<string, number | bigint>> {
     id: bigint;
     name: string;
-    endAt: number;
-    action: (nbTick: bigint, currentDate: number) => ActionModifier;
+    endAt: bigint;
+    states: T;
+}
+
+export interface Action<T = Record<string, number | bigint>> extends DBAction<T> {
+    action: (nbTick: bigint, currentTick: bigint, action: Action) => ActionModifier;
 }
 
 export interface ActionModifier {
@@ -59,16 +63,18 @@ export interface Tools {
 }
 
 export interface Settings {
-    saveDelay: number;
+    saveDelay: number; /* ms */
+    delayCheckTick: number /* ms */
 }
 
 export type Achievement = Record<string, boolean>;
 
 export interface TickInfo {
-    tickDuration: bigint;
-    lastActionDate: number;
-    nextActionDate: number;
-    actions: Action[];
+    tickDuration: bigint; /* duration between 2 ticks in ms */
+    lastActionDate: number; /* last date where actions were done */
+    nextActionDate: number; /* next date where actions are expected to be done (there should be no change before) */
+    lastActionTick: bigint; /* tick timestamp when last actions were done */
+    actions: Action[]; /* list of all current actions */
 }
 
 export interface DBStore {
