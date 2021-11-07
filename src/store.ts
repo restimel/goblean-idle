@@ -7,19 +7,21 @@ import {
     Achievement,
     States,
     Settings,
+    DBStore,
 } from '@/Types';
-import {
-    loadStore,
-    saveStore as saveStoreDB,
-} from '@/tools/DB';
 import { sleep } from '@/utils';
 import {
     runActions, startRepetitiveActions,
 } from '@/tools/Tick';
 import { restoreAction } from '@/tools/Actions';
 
+interface StoreArgument {
+    loadStore?: () => Promise<DBStore | undefined>;
+    saveStore?: (data: DBStore) => Promise<void>;
+    isTest?: boolean;
+}
 
-export default function createStore(): Store {
+export default function createStore({loadStore, saveStore, isTest}: StoreArgument = {}): Store {
     const settings: Settings = {
         saveDelay: 10000,
         delayCheckTick: 1000,
@@ -30,7 +32,7 @@ export default function createStore(): Store {
     const tickInfo: TickInfo = {
         tickDuration: 200n,
         lastActionDate: Date.now(),
-        nextActionDate: Infinity,
+        nextActionTick: 1_000_000_000n,
         lastActionTick: 0n,
         actions: [],
     };
@@ -41,13 +43,38 @@ export default function createStore(): Store {
 
 
     const cStore: CreatingStore = reactive({
-        userSession: 'TODO...',
+        userSession: 'TODO!!!',
         isReady: false,
         settings,
         resource,
         states,
         tickInfo,
-        tools: {},
+        tools: {
+            async saveStore() {
+                if (store.isReady) {
+                    checkStoreValue(store);
+                    saveStore && saveStore(store);
+                }
+            },
+            async loadStore(dbStore: Partial<DBStore> | undefined) {
+                if (dbStore) {
+                    dbStore.settings && Object.assign(store.settings, dbStore.settings);
+                    dbStore.resource && Object.assign(store.resource, dbStore.resource);
+                    dbStore.states && Object.assign(store.states, dbStore.states);
+                    dbStore.tickInfo && Object.assign(store.tickInfo, dbStore.tickInfo);
+                    if (dbStore.userSession) {
+                        store.userSession = dbStore.userSession;
+                    }
+                }
+                await storeReady();
+            },
+            saveInterval() {
+                clearInterval(store.tools.saveTimer || 0);
+                store.tools.saveTimer = setInterval(() => {
+                    store.tools.saveStore();
+                }, store.settings.saveDelay);
+            },
+        },
     });
 
     const achievement: Record<string, ComputedRef<boolean>> = {
@@ -70,24 +97,27 @@ export default function createStore(): Store {
     cStore.achievement = achievement as unknown as Achievement;
     const store = cStore as Store;
 
-    loadStore().then(async (dbStore) => {
-        if (dbStore) {
-            Object.assign(store.settings, dbStore.settings);
-            Object.assign(store.resource, dbStore.resource);
-            Object.assign(store.states, dbStore.states);
-            Object.assign(store.tickInfo, dbStore.tickInfo);
-            store.userSession = dbStore.userSession;
-        }
+    const storeReady = async () => {
         checkStoreValue(store);
 
         await sleep(5);
         store.isReady = true;
         runActions(store);
-        saveStore(store);
+        if (saveStore) {
+            saveStore(store);
+        }
         await sleep(10);
-        startRepetitiveActions(store);
-        saveInterval(store);
-    });
+        if (!isTest) {
+            startRepetitiveActions(store);
+            store.tools.saveInterval();
+        }
+    };
+
+    if (loadStore) {
+        loadStore().then(store.tools.loadStore);
+    } else {
+        storeReady();
+    }
 
     return store;
 }
@@ -99,11 +129,11 @@ export function checkStoreValue(store: Store): Store {
 
     if (store.settings.saveDelay < 1000) {
         store.settings.saveDelay = 1000;
-        saveInterval(store);
+        store.tools.saveInterval();
     }
 
-    if (store.settings.delayCheckTick < 500) {
-        store.settings.delayCheckTick = 500;
+    if (store.settings.delayCheckTick < 1) {
+        store.settings.delayCheckTick = 1;
     }
 
     store.tickInfo.actions.forEach((action, idx, list) => {
@@ -113,18 +143,4 @@ export function checkStoreValue(store: Store): Store {
     });
 
     return store;
-}
-
-export function saveInterval(store: Store): void {
-    clearInterval(store.tools.saveTimer || 0);
-    store.tools.saveTimer = setInterval(() => {
-        saveStore(store);
-    }, store.settings.saveDelay);
-}
-
-export function saveStore(store: Store): void {
-    if (store.isReady) {
-        checkStoreValue(store);
-        saveStoreDB(store);
-    }
 }

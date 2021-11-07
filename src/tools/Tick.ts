@@ -13,13 +13,27 @@ export function convertToDuration(ticks: bigint, tickInfo: TickInfo): number {
  */
 export function computeTick(tickInfo: TickInfo): bigint {
     const now = Date.now();
-    if (tickInfo.nextActionDate < tickInfo.lastActionDate) {
-        tickInfo.nextActionDate = Infinity;
-    }
-    const targetDate = Math.min(tickInfo.nextActionDate, now);
-    const nbTick = convertToTicks(targetDate - tickInfo.lastActionDate, tickInfo);
+    const timeDuration = now - tickInfo.lastActionDate;
+    const timeTick = convertToTicks(timeDuration, tickInfo);
+    const nbExpectedTick = tickInfo.nextActionTick - tickInfo.lastActionTick;
 
-    return nbTick;
+    if (timeTick < nbExpectedTick || nbExpectedTick <= 0n) {
+        return timeTick;
+    }
+    return nbExpectedTick;
+}
+
+function checkNextAction(tickInfo: TickInfo, currentTick: bigint = tickInfo.lastActionTick) {
+    /* Compute the duration of next identical actions period */
+    const nextTick = tickInfo.actions.reduce((tick, action) => {
+        const endAt = action.endAt;
+        if (endAt < tick && endAt > currentTick) {
+            return endAt;
+        }
+        return tick;
+    }, currentTick + 1_000_000_000n);
+
+    tickInfo.nextActionTick = nextTick;
 }
 
 function doActions(tickInfo: TickInfo): boolean {
@@ -48,15 +62,7 @@ function doActions(tickInfo: TickInfo): boolean {
     removeActions(remove, tickInfo);
     addActions(add, tickInfo);
 
-    /* Compute the duration of next identical actions period */
-    const nextTick = tickInfo.actions.reduce((tick, action) => {
-        const endAt = action.endAt;
-        if (endAt < tick && endAt > currentTick) {
-            return endAt;
-        }
-        return tick;
-    }, currentTick + 1000000000n);
-    tickInfo.nextActionDate = tickInfo.lastActionDate + convertToDuration(nextTick, tickInfo);
+    checkNextAction(tickInfo, currentTick);
 
     /* repeat to apply next available ticks */
     return true;
@@ -78,10 +84,12 @@ export function runActions(store: Store): void {
 
 export function addActions(actions: Action[], tickInfo: TickInfo): void {
     tickInfo.actions.push(...actions);
+    checkNextAction(tickInfo);
 }
 
 export function removeActions(actionsId: Set<bigint>, tickInfo: TickInfo): void {
     tickInfo.actions = tickInfo.actions.filter((action) => !actionsId.has(action.id));
+    checkNextAction(tickInfo);
 }
 
 let timerRepetitiveActions = 0;

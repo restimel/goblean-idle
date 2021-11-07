@@ -10,11 +10,15 @@ import buildStore from '@/store';
 import { storeInject, TInject, i18nInject } from '@/symbols';
 import Notification from '@/components/Notification.vue';
 import { getFullList } from '@/tools/Achievements';
+import {
+    loadStore,
+    saveStore,
+} from '@/tools/DB';
 
 export default defineComponent({
     name: 'App',
     provide() {
-        const store = buildStore();
+        const store = buildStore({loadStore, saveStore});
         getFullList(store, i18n._);
         return {
             [TInject as unknown as string]: i18n._,

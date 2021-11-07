@@ -60,6 +60,9 @@ export interface States {
 export interface Tools {
     notification?: Notification;
     saveTimer?: number;
+    loadStore: (dbStore: Partial<DBStore> | undefined) => Promise<void>;
+    saveStore: () => Promise<void>;
+    saveInterval: () => void;
 }
 
 export interface Settings {
@@ -72,7 +75,7 @@ export type Achievement = Record<string, boolean>;
 export interface TickInfo {
     tickDuration: bigint; /* duration between 2 ticks in ms */
     lastActionDate: number; /* last date where actions were done */
-    nextActionDate: number; /* next date where actions are expected to be done (there should be no change before) */
+    nextActionTick: bigint; /* next tick where actions are expected to be done (there should be no change before) */
     lastActionTick: bigint; /* tick timestamp when last actions were done */
     actions: Action[]; /* list of all current actions */
 }
