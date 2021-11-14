@@ -1,3 +1,15 @@
+/* {{{ generic types */
+
+type ArrayLengthMutationKeys = 'push' | 'pop' | 'shift' |  'unshift';
+export type FixedLengthArray<T, L extends number, TObj = [T, ...Array<T>]> =
+    Pick<TObj, Exclude<keyof TObj, ArrayLengthMutationKeys>> & {
+        readonly length: L;
+        [ I : number ] : T;
+        [Symbol.iterator]: () => IterableIterator<T>;
+    };
+
+/* }}} */
+
 
 export type SupportedLanguage = 'en';
 
@@ -45,6 +57,8 @@ export interface Notification {
     delay?: number;
     type?: 'success' | 'warning' | 'error' | 'info';
 }
+
+export type EAN13 = FixedLengthArray<number, 13>;
 
 /* {{{ Store */
 
@@ -97,5 +111,47 @@ export interface CreatingStore extends DBStore {
 export interface Store extends CreatingStore {
     achievement: Achievement;
 }
+
+/* }}} */
+/* {{{ Goblean */
+
+export interface StatsPhy {
+    speed: bigint;
+    force: bigint;
+    stamina: bigint;
+    intelligence: bigint;
+    craft: bigint;
+    learning: bigint;
+    social: bigint;
+}
+
+export interface DBGobleans extends StatsPhy {
+    ean: string;
+    name: string;
+
+    experience: bigint;
+    totalExp: bigint;
+    motivation: bigint;
+
+    groupId: bigint;
+}
+
+export interface Goblean extends DBGobleans {}
+
+export interface DBGroup {
+    id: bigint;
+
+    leaders: string[];
+    workers: string[];
+
+    position: FixedLengthArray<number, 2>;
+}
+
+export interface Group extends DBGroup, StatsPhy {
+    leadEfficiency: bigint;
+    efficiency: bigint;
+}
+
+export type GroupRole = 'same' | 'leader' | 'worker';
 
 /* }}} */

@@ -1,4 +1,4 @@
-import { DBStore } from '@/Types';
+import { DBGobleans, DBStore } from '@/Types';
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 function toObj(obj: any) {
@@ -23,6 +23,10 @@ interface GobleanDB extends DBSchema {
     store: {
         key: string;
         value: DBStore;
+    };
+    goblean: {
+        key: number;
+        value: DBGobleans;
     };
 }
 
