@@ -2,6 +2,7 @@
     <div class="menu">
         <header class="goblean-title">{{i18n.projectName}} <sub>{{i18n.projectSubName}}</sub></header>
         <router-link to="/map">{{T('Play')}}</router-link>
+        <router-link to="/goblean">{{T('Add Goblean')}}</router-link>
         <router-link to="/achievement">{{T('Achievements')}}</router-link>
         <router-link to="/about">{{T('About')}}</router-link>
     </div>

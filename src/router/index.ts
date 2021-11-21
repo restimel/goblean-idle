@@ -15,6 +15,10 @@ const routes: Array<RouteRecordRaw> = [
         name: 'Map',
         component: () => import(/* webpackChunkName: "map" */ '../views/Map.vue'),
     }, {
+        path: '/goblean',
+        name: 'Goblean',
+        component: () => import(/* webpackChunkName: "goblean" */ '../views/Goblean.vue'),
+    }, {
         path: '/achievement',
         name: 'Achievement',
         component: () => import(/* webpackChunkName: "achievement" */ '../views/Achievement.vue'),
