@@ -1,14 +1,20 @@
 <template>
     <teleport to="#app">
         <transition name="bounce" appear>
-            <div v-if="!!title"
+            <NAlert v-if="!!title"
                 class="notification"
-                :class="type"
-                @click="dismiss"
+                :title="title"
+                :type="type"
+                closable
+                :onClose="dismiss"
             >
-                <header>{{title}}</header>
-                <p>{{message}}</p>
-            </div>
+                <template #icon v-if="icon">
+                    <NIcon>
+                        <Trophy v-if="icon === 'trophy'" />
+                    </NIcon>
+                </template>
+                {{message}}
+            </NAlert>
         </transition>
     </teleport>
 </template>
@@ -18,6 +24,8 @@ import { defineComponent, computed, watch } from 'vue';
 import { injectStrict, notificationDismiss } from '@/utils';
 import { storeInject } from '@/symbols';
 import { Notification } from '@/Types';
+import { NAlert, NIcon } from 'naive-ui';
+import { Trophy } from '@vicons/ionicons5'
 
 export default defineComponent({
     name: 'Notification',
@@ -27,6 +35,7 @@ export default defineComponent({
         const message = computed(() => notificationStore.value && notificationStore.value.message || '');
         const title = computed(() => notificationStore.value && notificationStore.value.title);
         const type = computed(() => notificationStore.value && notificationStore.value.type || 'info');
+        const icon = computed(() => notificationStore.value && notificationStore.value.icon);
         const close = () => {
             clearTimeout(delayTimer);
             notificationDismiss(store);
@@ -54,51 +63,32 @@ export default defineComponent({
             dismiss,
         };
     },
+    components: {
+        NAlert,
+        NIcon,
+        Trophy,
+    },
 });
 </script>
 
 <style scoped>
 .notification {
     position: fixed;
-    background-color: var(--notification-bg);
+    /* background-color: var(--notification-bg);
     color: var(--notification-color);
     cursor: pointer;
     padding: 0.5em;
-    padding-top: 1em;
+    padding-top: 1em; */
     border-radius: 2em;
     bottom: 1em;
     left: 50%;
     --transformation: translate(-50%, 10px);
     transform: var(--transformation);
     max-width: 50%;
-    border: 5px solid #ffffffee;
-    box-shadow: 0 -3px 25px 5px var(--notification-bg);
+    /* border: 5px solid #ffffffee; */
+    box-shadow: 0 -3px 25px 5px black;
+    box-shadow: var(--notification-box-shadow);
     z-index: 1000;
-}
-.notification.info {
-    --notification-bg: var(--notification-bg-info);
-    --notification-color: var(--notification-color-info);
-}
-.notification.succes {
-    --notification-bg: var(--notification-bg-succes);
-    --notification-color: var(--notification-color-succes);
-}
-.notification.warning {
-    --notification-bg: var(--notification-bg-warning);
-    --notification-color: var(--notification-color-warning);
-}
-.notification.error {
-    --notification-bg: var(--notification-bg-error);
-    --notification-color: var(--notification-color-error);
-}
-
-.notification header {
-    font-weight: bold;
-}
-
-.notification p {
-    font-style: italic;
-    max-width: 600px;;
 }
 
 .bounce-enter-active {

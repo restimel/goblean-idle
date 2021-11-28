@@ -56,6 +56,7 @@ export interface Notification {
     message?: string;
     delay?: number;
     type?: 'success' | 'warning' | 'error' | 'info';
+    icon?: 'trophy';
 }
 
 export type EAN13 = FixedLengthArray<number, 13>;

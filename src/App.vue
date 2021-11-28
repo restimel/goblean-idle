@@ -1,10 +1,13 @@
 <template>
-    <router-view/>
-    <Notification />
+    <n-config-provider id="app-provider" :theme-overrides="themeOverrides">
+        <router-view/>
+        <Notification />
+    </n-config-provider>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { NConfigProvider, darkTheme, useThemeVars, GlobalThemeOverrides } from 'naive-ui';
 import i18n from '@/i18n';
 import buildStore from '@/store';
 import { storeInject, TInject, i18nInject } from '@/symbols';
@@ -29,33 +32,60 @@ export default defineComponent({
             store: store, /* in order to support inject: ['i18n'] */
         };
     },
+    data() {
+        console.log(darkTheme, useThemeVars().value);
+        const commonLightTheme = useThemeVars().value;
+        const brandPrimary = '#42b983';
+        const themeOverrides: GlobalThemeOverrides = Object.assign({}, {
+            common: {
+                ...commonLightTheme,
+                primaryColor: brandPrimary,
+            },
+            // Button: {
+            //     textColor: '#FF0000'
+            // },
+            // Select: {
+                // peers: {
+                //     InternalSelection: {
+                //        textColor: '#FF0000'
+                //     }
+                // }
+        }) as GlobalThemeOverrides;
+
+        return {
+            themeOverrides,
+            brandPrimary,
+        };
+    },
     components: {
         Notification,
+        NConfigProvider,
     },
 });
 </script>
 <style>
-:root {
-    --brand-primary: #42b983;
+:root, #app-provider {
+    --brand-primary: v-bind('themeOverrides.common.primaryColor');
     --brand-secondary: #f1b255;;
     --main-background: #EEFFEE;
     --text-color: #2c3e50;
     --item-bg: #f0f0f0;
     --item-color: var(--text-color);
 
-    --notification-bg-error: #ffacacd9;
+    /* --notification-bg-error: #ffacacd9;
     --notification-bg-warning: #ffbb77d9;
     --notification-bg-success: #d7ffd7d9;
-    --notification-bg-info: #f2fdfcd9;
-    --notification-bg: var(--notification-bg-info); /* will be override */
-    --notification-color-error: #009bb3;
+    --notification-bg-info: #f2fdfcd9; */
+    /* --notification-bg: var(--notification-bg-info); /* will be override */
+    /* --notification-color-error: #009bb3;
     --notification-color-warning: #009bb3;
     --notification-color-success: #009bb3;
-    --notification-color-info: #009bb3;
-    --notification-color: var(--notification-color-info); /* will be override */
+    --notification-color-info: #009bb3; */
+    /* --notification-color: var(--notification-color-info); /* will be override */
+    --notification-box-shadow: v-bind('themeOverrides.common.boxShadow1');
 }
 
-html,body, #app {
+html,body, #app, #app-provider {
     position: fixed;
     width: 100%;
     height: 100%;
@@ -69,10 +99,11 @@ html,body, #app {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
+}
+
+#app-provider {
     color: var(--text-color);
     background-color: var(--main-background);
-    height: 100%;
-    width: 100%;
 }
 
 .goblean-title {

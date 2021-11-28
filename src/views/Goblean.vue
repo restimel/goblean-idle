@@ -29,6 +29,7 @@ import Back from '@/components/Back.vue';
 import { injectStrict } from '@/utils';
 import { storeInject, TInject } from '@/symbols';
 import { createGoblean } from '@/tools/Goblean';
+import { notification } from '@/utils';
 
 export default defineComponent({
     name: 'Goblean',
@@ -39,7 +40,14 @@ export default defineComponent({
         const ean = ref('');
 
         const goblean = computed(() => {
-            return createGoblean(ean.value, true);
+            const goblean = createGoblean(ean.value, true);
+            if (goblean) {
+                notification(store, {
+                    title: 'goblean is valid',
+                    message: `The goblean ${ean.value} is valid!!!`,
+                });
+            }
+            return goblean;
         });
 
         return {

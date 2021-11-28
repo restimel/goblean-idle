@@ -1,5 +1,5 @@
 import { reactive, watch } from 'vue';
-import { AchievementItem, I18n, Store } from '@/Types';
+import { AchievementItem, I18n, Store, Notification as NotificationType } from '@/Types';
 import { notification } from '@/utils';
 
 const list: Map<Store, AchievementItem[]> = new Map();
@@ -80,7 +80,8 @@ export function getFullList(store: Store, T: I18n['_']): AchievementItem[] {
             return {
                 title: T('A new achievement has been unlocked'),
                 message: achievement.title,
-            };
+                icon: 'trophy',
+            } as NotificationType;
         });
         notification(store, messages);
     });
