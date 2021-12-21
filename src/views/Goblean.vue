@@ -3,14 +3,17 @@
         <Back />
         <h1 class="page-title">{{T('Add a new Goblean')}}</h1>
 
-        <label>
-            {{T('Enter the EAN code:')}}
-            <input
-                :placeholder="T('EAN code bar')"
-                type="text"
-                @input="(evt) => ean = evt.currentTarget.value"
-            >
-        </label>
+        <section>
+            <VideoReader />
+            <label>
+                {{T('Enter the EAN code:')}}
+                <input
+                    :placeholder="T('EAN code bar')"
+                    type="text"
+                    @input="(evt) => ean = evt.currentTarget.value"
+                >
+            </label>
+        </section>
         <div v-if="!!goblean" class="stats">
             <div class="charac">Speed</div><div class="value">{{goblean.speed}}</div>
             <div class="charac">Force</div><div class="value">{{goblean.force}}</div>
@@ -26,6 +29,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue';
 import Back from '@/components/Back.vue';
+import VideoReader from '@/components/VideoReader.vue';
 import { injectStrict } from '@/utils';
 import { storeInject, TInject } from '@/symbols';
 import { createGoblean } from '@/tools/Goblean';
@@ -58,6 +62,7 @@ export default defineComponent({
     },
     components: {
         Back,
+        VideoReader,
     },
 });
 </script>
