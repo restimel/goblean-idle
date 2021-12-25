@@ -61,6 +61,13 @@ export interface Notification {
 
 export type EAN13 = FixedLengthArray<number, 13>;
 
+export type Box =  [
+    [number, number],
+    [number, number],
+    [number, number],
+    [number, number]
+];
+
 /* {{{ Store */
 
 export interface Resource {

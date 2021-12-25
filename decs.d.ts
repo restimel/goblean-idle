@@ -1,0 +1,1 @@
+src/decs.d.ts

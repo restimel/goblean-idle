@@ -4,13 +4,20 @@
         <h1 class="page-title">{{T('Add a new Goblean')}}</h1>
 
         <section>
-            <VideoReader />
+            <VideoReader
+                :boxes="codeBox"
+                :action="videoAction"
+                showScan
+                @picture="onPicture"
+                @play="pauseVideo = false; action('picture');"
+                @pause="pauseVideo = true"
+            />
             <label>
                 {{T('Enter the EAN code:')}}
                 <input
                     :placeholder="T('EAN code bar')"
                     type="text"
-                    @input="(evt) => ean = evt.currentTarget.value"
+                    v-model="ean"
                 >
             </label>
         </section>
@@ -27,13 +34,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref, Ref, computed } from 'vue';
 import Back from '@/components/Back.vue';
-import VideoReader from '@/components/VideoReader.vue';
-import { injectStrict } from '@/utils';
+import VideoReader, { Action } from '@/components/VideoReader.vue';
+import {
+    decode,
+} from '@/tools/BarCodeReader';
 import { storeInject, TInject } from '@/symbols';
 import { createGoblean } from '@/tools/Goblean';
-import { notification } from '@/utils';
+import { injectStrict, notification, sleep } from '@/utils';
+import { Box } from '@/Types';
 
 export default defineComponent({
     name: 'Goblean',
@@ -42,6 +52,15 @@ export default defineComponent({
         const T = injectStrict(TInject);
 
         const ean = ref('');
+        const codeBox: Ref<Box[] | null> = ref(null);
+        const pauseVideo = ref(false);
+        const videoAction: Ref<Action> = ref('none');
+
+        const action = async (act: Action) => {
+            videoAction.value = act;
+            await sleep(0);
+            videoAction.value = 'none';
+        };
 
         const goblean = computed(() => {
             const goblean = createGoblean(ean.value, true);
@@ -54,10 +73,47 @@ export default defineComponent({
             return goblean;
         });
 
+        let isScanning = false;
+        const onPicture = async (img: HTMLImageElement, manual = false) => {
+            if (manual) {
+                action('pause');
+            } else if (isScanning) {
+                return;
+            }
+            isScanning = true;
+            const { code, box } = await decode(img);
+            isScanning = false;
+            if (manual) {
+                action('play');
+            }
+
+            if (box) {
+                codeBox.value = box;
+            } else {
+                codeBox.value = null;
+            }
+
+            if (code) {
+                ean.value = code;
+                action('stop');
+            } else {
+                await sleep(100);
+                if (!pauseVideo.value) {
+                    action('picture');
+                }
+            }
+        };
+
         return {
             ean,
             goblean,
             T,
+            codeBox,
+            videoAction,
+            pauseVideo,
+
+            action,
+            onPicture,
         };
     },
     components: {

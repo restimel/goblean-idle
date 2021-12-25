@@ -11,13 +11,20 @@
         <div v-else
             class="video-section"
         >
-            <video v-if="stream"
+            <div v-if="stream"
                 class="video-stream"
-                :srcObject="stream"
-                autoplay
-                ref="videoEl"
-                @click="takePhoto"
-            />
+                @click="takePhoto(true)"
+            >
+                <video
+                    class="video-stream"
+                    :srcObject="stream"
+                    autoplay
+                    ref="videoEl"
+                />
+                <canvas
+                    ref="canvasEl"
+                />
+            </div>
             <aside class="video-buttons">
                 <NDropdown v-if="cameraList.length > 0"
                     trigger="hover"
@@ -47,23 +54,25 @@
                     {{T('Picture definition:')}}
                     <NSlider
                         v-model:value="canvasSizeVal"
-                        :step="10"
-                        :min="100"
-                        :max="1280"
-                        :format-tooltip="value => `${value} × ${value}`"
+                        :step="5"
+                        :min="10"
+                        :max="200"
+                        :format-tooltip="value => `${Math.round(value * videoWidth / 100)} × ${Math.round(value * videoHeight / 100)}`"
                     />
                 </label>
             </aside>
         </div>
-        <canvas ref="canvasEl" />
     </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, Ref } from 'vue';
+import { defineComponent, ref, computed, Ref, PropType, watch } from 'vue';
 import { injectStrict } from '@/utils';
 import { TInject } from '@/symbols';
 import { Camera, Stop, ResizeOutline as TestIcon } from '@vicons/ionicons5'
+import { Box } from '@/Types';
+
+export type Action = 'none' | 'picture' | 'pause' | 'play' | 'stop';
 
 type Status = 'pending' | 'allowed' | 'forbid' | 'disabled';
 interface DeviceInfo {
@@ -76,7 +85,22 @@ interface CameraInfo extends DeviceInfo {
 
 export default defineComponent({
     name: 'VideoReader',
-    setup() {
+    props: {
+        boxes: {
+            type: Array as unknown as PropType<Box[]>,
+            required: false,
+        },
+        showScan: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        },
+        action: {
+            type: String as PropType<Action>,
+            default: 'none',
+        }
+    },
+    emits: ['picture', 'play', 'pause'],
+    setup(props, context) {
         const T = injectStrict(TInject);
 
         const supportMediaDevice = !!(
@@ -84,16 +108,24 @@ export default defineComponent({
             navigator.mediaDevices.getUserMedia
         );
 
+        const videoWidth = ref(640);
+        const videoHeight = ref(480);
+
         const status: Ref<Status> = ref('pending');
         const deviceList: Ref<DeviceInfo[]> = ref([]);
         const deviceId: Ref<null | string> = ref(null);
         const stream: Ref<null | MediaStream> = ref(null);
         const videoEl: Ref<null | HTMLVideoElement> = ref(null);
         const canvasEl: Ref<null | HTMLCanvasElement> = ref(null);
-        const canvasSizeVal: Ref<number> = ref(300);
+        const canvasSizeVal: Ref<number> = ref(120);
+        const redBarIdx: Ref<number> = ref(0);
+        const pause = ref(true);
+
+        let timerScan = 0;
 
         const stopStream = () => {
             const streamValue = stream.value;
+            pause.value = true;
             if (streamValue) {
                 streamValue.getVideoTracks().forEach(mediaStreamTrack => mediaStreamTrack.stop());
                 stream.value = null;
@@ -115,6 +147,7 @@ export default defineComponent({
                     });
                     status.value = 'allowed';
                     stream.value = mediaStream;
+                    pause.value = false;
 
                     /* List all camera availabled */
                     if (deviceList.value.length > 0) {
@@ -156,45 +189,91 @@ export default defineComponent({
             });
         });
 
-        const takePhoto = () => {
+        const drawShapes = () => {
+            const canvasSize = canvasSizeVal.value;
+            const canvasWidth = canvasSize / 100 * videoWidth.value;
+            const canvasHeight = canvasSize / 100 * videoHeight.value;
+            const canvas = canvasEl.value;
+            const ctx = canvas && canvas.getContext('2d');
+
+            if (!ctx || !canvas) {
+                return;
+            }
+
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            ctx.lineWidth = canvasHeight / 150;
+
+            if (props.boxes) {
+                for (const box of props.boxes) {
+                    const [[x1, y1], [x2, y2], [x3, y3], [x4, y4]] = box;
+                    ctx.strokeStyle = 'orange';
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.lineTo(x3, y3);
+                    ctx.lineTo(x4, y4);
+                    ctx.closePath();
+                    ctx.stroke();
+                }
+            }
+
+            if (props.showScan && !pause.value) {
+                const midSize = canvasHeight / 2;
+                const redBarY = Math.cos(redBarIdx.value * Math.PI / 20) * midSize + midSize;
+                ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+                ctx.beginPath();
+                ctx.moveTo(0, redBarY);
+                ctx.lineTo(canvasWidth, redBarY);
+                ctx.stroke();
+                redBarIdx.value = redBarIdx.value + 1;
+            }
+        };
+
+        const takePhoto = (manual = false, retry = 3) => {
             const streamVideo = videoEl.value;
             const canvasSize = canvasSizeVal.value;
+            const canvasWidth = canvasSize / 100 * videoWidth.value;
+            const canvasHeight = canvasSize / 100 * videoHeight.value;
             const fullVideo = true;
-            const streamCanvas = canvasEl.value;
-            // const streamCanvas = document.createElement('canvas');
+            const streamCanvas = document.createElement('canvas');
             const streamPicture = document.createElement('img');
             const ctx = streamCanvas && streamCanvas.getContext('2d');
 
             if (!streamVideo || !streamCanvas || !ctx) {
+                if (retry) {
+                    setTimeout(takePhoto, 100, manual, retry - 1);
+                }
                 return;
             }
-            streamCanvas.width = canvasSize;
-            streamCanvas.height = canvasSize;
+            streamCanvas.width = canvasWidth;
+            streamCanvas.height = canvasHeight;
 
             const vWidth = streamVideo.videoWidth;
             const vHeight = streamVideo.videoHeight;
-            let width = canvasSize;
-            let height = canvasSize;
-            let offsetX = 0;
-            let offsetY = 0;
+            let width = canvasWidth;
+            let height = canvasHeight;
+            // let offsetX = 0;
+            // let offsetY = 0;
 
             if (fullVideo) {
                 /* keep all the video inside the canvas */
                 if (vWidth > vHeight) {
-                    height = canvasSize * vHeight / vWidth;
-                    offsetY = (canvasSize - height) / 2;
+                    height = canvasHeight * vHeight / vWidth;
+                    // offsetY = (canvasSize - height) / 2;
                 } else {
-                    width = canvasSize * vWidth / vHeight;
-                    offsetX = (canvasSize - width) / 2;
+                    width = canvasWidth * vWidth / vHeight;
+                    // offsetX = (canvasSize - width) / 2;
                 }
             } else {
                 /* trunc the video to keep the smallest side in the canvas */
                 if (vWidth > vHeight) {
-                    width = canvasSize * vWidth / vHeight;
-                    offsetX = (canvasSize - width) / 2;
+                    width = canvasWidth * vWidth / vHeight;
+                    // offsetX = (canvasSize - width) / 2;
                 } else {
-                    height = canvasSize * vHeight / vWidth;
-                    offsetY = (canvasSize - height) / 2;
+                    height = canvasHeight * vHeight / vWidth;
+                    // offsetY = (canvasSize - height) / 2;
                 }
             }
 
@@ -202,6 +281,8 @@ export default defineComponent({
             // ctx.drawImage(streamVideo, 0, 0, vWidth, vHeight, offsetX, offsetY, width, height);
             let data = streamCanvas.toDataURL('image/png');
             streamPicture.src = data;
+
+            context.emit('picture', streamPicture, manual);
         };
 
         const notifReader = computed(() => {
@@ -232,6 +313,45 @@ export default defineComponent({
             };
         });
 
+        /* {{{ watch */
+
+        watch(() => props.action, () => {
+            const streamVideo = videoEl.value;
+            const action = props.action;
+
+            switch(action) {
+                case 'none':
+                    break;
+                case 'pause':
+                    streamVideo && streamVideo.pause();
+                    pause.value = true;
+                    break;
+                case 'play':
+                    streamVideo && streamVideo.play();
+                    pause.value = false;
+                    break;
+                case 'stop':
+                    stopStream();
+                    break;
+                case 'picture':
+                    takePhoto();
+                    break;
+            }
+        });
+
+        watch(() => pause.value, () => {
+            const pauseValue = pause.value;
+            if (pauseValue) {
+                context.emit('pause');
+            } else {
+                context.emit('play');
+            }
+        });
+
+        /* }}} */
+
+        timerScan = setInterval(drawShapes, 150);
+
         return {
             T,
             notifReader,
@@ -239,6 +359,10 @@ export default defineComponent({
             stream,
             canvasSizeVal,
             showSize: ref(false),
+            videoWidth,
+            videoHeight,
+
+            timerScan,
 
             videoEl,
             canvasEl,
@@ -267,6 +391,7 @@ export default defineComponent({
     },
     unmounted() {
         this.stopStream();
+        clearInterval(this.timerScan);
     },
     components: {
         Camera,
@@ -294,6 +419,9 @@ export default defineComponent({
 
     .video-stream {
         grid-area: video;
+        position: relative;
+        width: 640px;
+        height: 480px;
     }
 
     .video-buttons {
@@ -302,6 +430,15 @@ export default defineComponent({
         flex-direction: row;
         justify-content: center;
         gap: 5px;
+    }
+
+    .video-stream video,
+    .video-stream canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 640px;
+        height: 480px;
     }
 
     .video-tools {
