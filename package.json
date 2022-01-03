@@ -26,6 +26,7 @@
         "lint": "vue-cli-service lint"
     },
     "dependencies": {
+        "es-support": "1.0.5",
         "idb": "^6.1.4",
         "quagga": "^0.12.1",
         "vue": "^3.0.0",

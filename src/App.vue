@@ -33,7 +33,6 @@ export default defineComponent({
         };
     },
     data() {
-        console.log(darkTheme, useThemeVars().value);
         const commonLightTheme = useThemeVars().value;
         const brandPrimary = '#42b983';
         const themeOverrides: GlobalThemeOverrides = Object.assign({}, {
